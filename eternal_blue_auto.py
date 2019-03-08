@@ -1183,7 +1183,7 @@ parser.add_argument('-b', help='Add backdoor account',action='store_true', defau
 parser.add_argument('-s', help='Setup openssh/NMAP',action='store_true', default=False)
 parser.add_argument('-nr', help='Rev pupy connection',action='store_false', default=True)
 parser.add_argument('-nB', help='Bind pupy connection',action='store_false', default=True)
-parser.add_argument('-nf', help='Dont Drop firewall',action='store_false', default=True)
+parser.add_argument('-nf', help='Dont Drop firewall/turn off win defender',action='store_false', default=True)
 parser.add_argument('-c', help='Command Shell *broken', action='store_true', default=False)
 args = parser.parse_args()
 
